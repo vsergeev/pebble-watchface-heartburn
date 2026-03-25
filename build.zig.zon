@@ -1,0 +1,13 @@
+.{
+    .name = .pebble_watchface_heartburn,
+    .version = "0.0.1",
+    .dependencies = .{
+        .pebble_sdk = .{
+            .url = "git+https://github.com/vsergeev/zig-pebble-sdk?ref=master#cc0b0f32c6ad7792061280452d108006482791c9",
+            .hash = "pebble_sdk-1.2.0-rN96oO6uAABFDKcFG5mJkV5ABtmPFhUhp-m-30lAgVUI",
+        },
+    },
+    .minimum_zig_version = "0.15.2",
+    .paths = .{""},
+    .fingerprint = 0x5d8ad21e7301b63f,
+}
