@@ -9,7 +9,7 @@ pub fn build(b: *std.Build) !void {
             .displayName = "Heartburn Watchface",
             .author = "vsergeev",
             .uuid = "250e6787-7f0e-44ea-ab01-eab66036d278",
-            .version = .{ .major = 0, .minor = 1 },
+            .version = .{ .major = 1, .minor = 0 },
             .targetPlatforms = &.{.emery},
             .watchapp = .{
                 .watchface = true,
