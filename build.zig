@@ -30,6 +30,7 @@ pub fn build(b: *std.Build) !void {
             .capabilities = &.{ .health, .location },
         },
         .root_source_file = b.path("src/main.zig"),
+        .pebblekit_js_file = b.path("js/bundle.js"),
         .optimize = .ReleaseFast,
     });
 }
