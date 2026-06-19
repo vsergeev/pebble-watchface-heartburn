@@ -1,5 +1,62 @@
 "use strict";
 (() => {
+  // src/settings.html
+  var settings_default = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Heartburn Settings</title>
+  </head>
+  <body style="margin: 0 auto; padding: 0 1rem; max-width: 600px; background: #333; color: #fff; font-family: sans-serif">
+    <form>
+      <h3 style="margin-bottom: 1rem; text-align: center; text-transform: uppercase; letter-spacing: 0.025em">Heartburn Settings</h3>
+
+      <div style="padding: 0.75rem; background: #484848; border-radius: 0.25rem">
+        <label style="display: flex; justify-content: space-between; align-items: center">
+          <span>Temperature Unit</span>
+          <select id="temperature-unit-select" style="background: #5b5b5b; color: #fff; border: 0; border-radius: 0.25rem; padding: 0.3rem 0.5rem">
+            <option value="C">Celsius (&deg;C)</option>
+            <option value="F">Fahrenheit (&deg;F)</option>
+          </select>
+        </label>
+      </div>
+
+      <div style="text-align: center; margin-top: 1rem">
+        <button
+          id="submit-btn"
+          type="submit"
+          style="
+            background: #ff4700;
+            color: #fff;
+            border: 0;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            min-width: 12rem;
+            padding: 0.6rem;
+            cursor: pointer;
+          "
+        >
+          Save
+        </button>
+      </div>
+    </form>
+
+    <script>
+      document.getElementById('submit-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        var settings = { temperatureUnit: document.getElementById('temperature-unit-select').value };
+        window.location.href = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+      });
+
+      var settings = JSON.parse('$$SETTINGS$$');
+      document.getElementById('temperature-unit-select').value = settings.temperatureUnit === 'F' ? 'F' : 'C';
+    <\/script>
+  </body>
+</html>
+`;
+
   // src/index.ts
   async function geolocate() {
     return new Promise((resolve, reject) => {
@@ -87,10 +144,11 @@
   async function refreshWeather() {
     try {
       const location = await geolocate();
+      const temperatureUnit = localStorage.getItem("temperatureUnit") === "F" ? "fahrenheit" : "celsius";
       const weather = JSON.parse(
         await fetch(
           "GET",
-          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&forecast_days=3&temperature_unit=fahrenheit"
+          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&forecast_days=3&temperature_unit=" + temperatureUnit
         )
       );
       const currentTime = /* @__PURE__ */ new Date();
@@ -119,6 +177,26 @@
       } catch (err) {
         console.log("Error fetching weather:", err);
       }
+    }
+  });
+  Pebble.addEventListener("showConfiguration", function() {
+    Pebble.openURL(
+      "data:text/html;charset=utf-8," + encodeURIComponent(settings_default.replace("$$SETTINGS$$", JSON.stringify({ temperatureUnit: localStorage.getItem("temperatureUnit") ?? "C" })))
+    );
+  });
+  Pebble.addEventListener("webviewclosed", async function(e) {
+    if (!e.response) return;
+    try {
+      const config = JSON.parse(decodeURIComponent(e.response));
+      localStorage.setItem("temperatureUnit", config["temperatureUnit"]);
+    } catch (err) {
+      console.log("Error processing configuration:", err);
+      return;
+    }
+    try {
+      await refreshWeather();
+    } catch (err) {
+      console.log("Error fetching weather:", err);
     }
   });
 })();

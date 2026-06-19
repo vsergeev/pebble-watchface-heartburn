@@ -27,7 +27,7 @@ pub fn build(b: *std.Build) !void {
                 .{ .key = "WEATHER_SUNRISE", .value = 10013 },
                 .{ .key = "WEATHER_SUNSET", .value = 10014 },
             },
-            .capabilities = &.{ .health, .location },
+            .capabilities = &.{ .health, .location, .configurable },
         },
         .root_source_file = b.path("src/main.zig"),
         .pebblekit_js_file = b.path("js/bundle.js"),

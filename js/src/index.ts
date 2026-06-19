@@ -1,6 +1,8 @@
 // pebble-watchface-heartburn v1.0
 // https://github.com/vsergeev/pebble-watchface-heartburn
 
+import settingsPage from './settings.html';
+
 ////////////////////////////////////////////////////////////////////////////////
 // Helpers
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +94,8 @@ async function refreshWeather(): Promise<void> {
   try {
     const location = await geolocate();
 
+    const temperatureUnit = localStorage.getItem('temperatureUnit') === 'F' ? 'fahrenheit' : 'celsius';
+
     const weather = JSON.parse(
       await fetch(
         'GET',
@@ -99,7 +103,8 @@ async function refreshWeather(): Promise<void> {
           location.coords.latitude +
           '&longitude=' +
           location.coords.longitude +
-          '&daily=sunrise,sunset&current=temperature_2m,weather_code&forecast_days=3&temperature_unit=fahrenheit',
+          '&daily=sunrise,sunset&current=temperature_2m,weather_code&forecast_days=3&temperature_unit=' +
+          temperatureUnit,
       ),
     );
 
@@ -136,5 +141,30 @@ Pebble.addEventListener('appmessage', async function (e: { type: string; payload
     } catch (err) {
       console.log('Error fetching weather:', err);
     }
+  }
+});
+
+Pebble.addEventListener('showConfiguration', function () {
+  Pebble.openURL(
+    'data:text/html;charset=utf-8,' +
+      encodeURIComponent(settingsPage.replace('$$SETTINGS$$', JSON.stringify({ temperatureUnit: localStorage.getItem('temperatureUnit') ?? 'C' }))),
+  );
+});
+
+Pebble.addEventListener('webviewclosed', async function (e) {
+  if (!e.response) return;
+
+  try {
+    const config = JSON.parse(decodeURIComponent(e.response));
+    localStorage.setItem('temperatureUnit', config['temperatureUnit']);
+  } catch (err) {
+    console.log('Error processing configuration:', err);
+    return;
+  }
+
+  try {
+    await refreshWeather();
+  } catch (err) {
+    console.log('Error fetching weather:', err);
   }
 });
