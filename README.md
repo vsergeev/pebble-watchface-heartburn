@@ -13,6 +13,24 @@ Features:
 * Heart rate graph (~1 hr)
 * Seconds on tap
 
-# License
+## Build
+
+```
+zig build
+```
+
+## Emulate
+
+```
+PEBBLE_EMULATOR=emery zig build upload -- --logs
+```
+
+## Upload (via CloudPebble)
+
+```
+PEBBLE_CLOUDPEBBLE=1 zig build upload -- --logs
+```
+
+## License
 
 pebble-watchface-heartburn is MIT licensed. See the included [LICENSE](LICENSE) file.
