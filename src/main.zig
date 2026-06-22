@@ -303,7 +303,7 @@ const SunEventWidget = struct {
 
 const BatteryWidget = struct {
     layer: ?*pebble.Layer = null,
-    battery_level: ?u8 = null,
+    battery_level: u8 = 0,
     battery_level_str: [8:0]u8 = ("?%" ++ [_]u8{0} ** 6).*,
     charging: bool = false,
 
@@ -317,11 +317,11 @@ const BatteryWidget = struct {
         pebble.layer_destroy(self.layer);
     }
 
-    pub fn update(self: *BatteryWidget, battery_level: u8, charging: bool) void {
-        self.battery_level = battery_level;
-        self.charging = charging;
+    pub fn update(self: *BatteryWidget, charge: pebble.BatteryChargeState) void {
+        self.battery_level = charge.charge_percent;
+        self.charging = charge.is_charging;
 
-        _ = std.fmt.bufPrintZ(&self.battery_level_str, "{d}%", .{battery_level}) catch unreachable;
+        _ = std.fmt.bufPrintZ(&self.battery_level_str, "{d}%", .{self.battery_level}) catch unreachable;
 
         pebble.layer_mark_dirty(self.layer);
     }
@@ -329,15 +329,7 @@ const BatteryWidget = struct {
     pub fn width(self: *BatteryWidget) i16 {
         const layer_bounds = pebble.layer_get_bounds(self.layer);
 
-        const icon_text = blk: {
-            if (self.charging) {
-                break :blk "8";
-            } else if (self.battery_level) |battery_level| {
-                break :blk if (battery_level > 75) "7" else if (battery_level > 50) "6" else if (battery_level > 25) "5" else "4";
-            } else {
-                break :blk "7";
-            }
-        };
+        const icon_text = if (self.charging) "8" else if (self.battery_level > 75) "7" else if (self.battery_level > 50) "6" else if (self.battery_level > 25) "5" else "4";
         const widget_text = @as([:0]const u8, @ptrCast(&self.battery_level_str));
 
         const icon_size = pebble.graphics_text_layout_get_content_size(icon_text, FONT_ICONS, layer_bounds, pebble.GTextOverflowModeWordWrap, pebble.GTextAlignmentCenter);
@@ -348,15 +340,7 @@ const BatteryWidget = struct {
     pub fn draw(layer: ?*pebble.Layer, ctx: ?*pebble.GContext) callconv(.c) void {
         const self = &state.battery_widget;
 
-        const icon_text = blk: {
-            if (self.charging) {
-                break :blk "8";
-            } else if (self.battery_level) |battery_level| {
-                break :blk if (battery_level > 75) "7" else if (battery_level > 50) "6" else if (battery_level > 25) "5" else "4";
-            } else {
-                break :blk "7";
-            }
-        };
+        const icon_text = if (self.charging) "8" else if (self.battery_level > 75) "7" else if (self.battery_level > 50) "6" else if (self.battery_level > 25) "5" else "4";
 
         widget_draw(ctx, pebble.layer_get_bounds(layer), .TopRight, .{}, icon_text, @as([:0]const u8, @ptrCast(&self.battery_level_str)));
     }
@@ -636,7 +620,7 @@ fn tap_handler(_: pebble.AccelAxisType, _: i32) callconv(.c) void {
 fn battery_state_handler(charge: pebble.BatteryChargeState) callconv(.c) void {
     if (!pebble.window_is_loaded(state.window)) return;
 
-    state.battery_widget.update(charge.charge_percent, charge.is_charging);
+    state.battery_widget.update(charge);
 }
 
 fn health_event_handler(event: pebble.HealthEventType, _: ?*anyopaque) callconv(.c) void {
@@ -682,6 +666,10 @@ fn init() void {
         .unload = window_unload,
     });
     pebble.window_stack_push(state.window, true);
+
+    state.battery_widget.update(pebble.battery_state_service_peek());
+    state.heartrate_widget.update(@intCast(pebble.health_service_peek_current_value(pebble.HealthMetricHeartRateBPM)));
+    state.heartratehistory_widget.update();
 
     pebble.tick_timer_service_subscribe(pebble.MINUTE_UNIT, tick_handler);
     pebble.accel_tap_service_subscribe(tap_handler);
