@@ -684,6 +684,11 @@ fn init() void {
 }
 
 fn deinit() void {
+    pebble.tick_timer_service_unsubscribe();
+    pebble.accel_tap_service_unsubscribe();
+    pebble.battery_state_service_unsubscribe();
+    _ = pebble.health_service_events_unsubscribe();
+
     pebble.window_destroy(state.window);
 
     pebble.fonts_unload_custom_font(FONT_ICONS);
