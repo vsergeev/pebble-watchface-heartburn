@@ -674,6 +674,7 @@ fn init() void {
     pebble.tick_timer_service_subscribe(pebble.MINUTE_UNIT, tick_handler);
     pebble.accel_tap_service_subscribe(tap_handler);
     pebble.battery_state_service_subscribe(battery_state_handler);
+    _ = pebble.health_service_set_heart_rate_sample_period(60);
     _ = pebble.health_service_events_subscribe(health_event_handler, null);
 
     _ = pebble.app_message_register_inbox_received(inbox_received_callback);
@@ -684,6 +685,8 @@ fn init() void {
 }
 
 fn deinit() void {
+    _ = pebble.health_service_set_heart_rate_sample_period(0);
+
     pebble.tick_timer_service_unsubscribe();
     pebble.accel_tap_service_unsubscribe();
     pebble.battery_state_service_unsubscribe();
