@@ -10,7 +10,7 @@ const pebble_appids = @import("pebble_appids");
 // Constants
 ////////////////////////////////////////////////////////////////////////////////
 
-const COLOR_BACKGROUND = pebble.GColorDarkGray;
+const COLOR_BACKGROUND = pebble.GColorBlack;
 const COLOR_DATETIME = pebble.GColorPastelYellow;
 const COLOR_WIDGETS = pebble.GColorWhite;
 const COLOR_HEARTRATE_HISTORY = pebble.GColorWhite;
