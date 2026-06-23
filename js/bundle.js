@@ -148,7 +148,7 @@
       const weather = JSON.parse(
         await fetch(
           "GET",
-          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&forecast_days=3&temperature_unit=" + temperatureUnit
+          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&past_days=1&forecast_days=2&temperature_unit=" + temperatureUnit
         )
       );
       const currentTime = /* @__PURE__ */ new Date();
