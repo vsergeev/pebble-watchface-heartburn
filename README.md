@@ -2,7 +2,7 @@
 
 [![](screenshot.png)](screenshot.png)
 
-A Zenburn-esque watchface with a heart rate graph for the Pebble Time 2. Written in Zig using [zig-pebble-sdk](https://github.com/vsergeev/zig-pebble-sdk).
+A Darkburn-esque watchface with a heart rate graph for the Pebble Time 2. Written in Zig using [zig-pebble-sdk](https://github.com/vsergeev/zig-pebble-sdk).
 
 Features:
 
