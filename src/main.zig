@@ -538,7 +538,7 @@ fn inbox_received_callback(iterator: [*c]pebble.DictionaryIterator, _: ?*anyopaq
 
     const weather_conditions_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_CONDITIONS));
     if (weather_conditions_tuple != null) {
-        const conditions = std.mem.span(@as([*c]const u8, &weather_conditions_tuple.*.value().*.cstring));
+        const conditions = std.mem.span(weather_conditions_tuple.*.value().*.cstring());
         inline for (@typeInfo(WeatherConditions).@"enum".fields) |enumField| {
             if (std.mem.eql(u8, conditions, enumField.name)) {
                 state.weather_widget.updateConditions(@field(WeatherConditions, enumField.name));
@@ -549,13 +549,13 @@ fn inbox_received_callback(iterator: [*c]pebble.DictionaryIterator, _: ?*anyopaq
 
     const weather_sunrise_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_SUNRISE));
     if (weather_sunrise_tuple != null) {
-        const sunrise_iso8601_str = std.mem.span(@as([*c]const u8, &weather_sunrise_tuple.*.value().*.cstring));
+        const sunrise_iso8601_str = std.mem.span(weather_sunrise_tuple.*.value().*.cstring());
         state.sunevent_widget.updateSunrise(sunrise_iso8601_str);
     }
 
     const weather_sunset_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_SUNSET));
     if (weather_sunset_tuple != null) {
-        const sunset_iso8601_str = std.mem.span(@as([*c]const u8, &weather_sunset_tuple.*.value().*.cstring));
+        const sunset_iso8601_str = std.mem.span(weather_sunset_tuple.*.value().*.cstring());
         state.sunevent_widget.updateSunset(sunset_iso8601_str);
     }
 
