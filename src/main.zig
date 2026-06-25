@@ -482,7 +482,7 @@ const DateTimeWidget = struct {
         pebble.tick_timer_service_subscribe(pebble.SECOND_UNIT, tick_handler);
     }
 
-    pub fn update(self: *DateTimeWidget, tick_time: *pebble.tm, _: pebble.TimeUnits) void {
+    pub fn update(self: *DateTimeWidget, tick_time: *pebble.tm) void {
         _ = pebble.strftime(&self.date_str, self.date_str.len, "%a %b %d", tick_time);
         _ = pebble.strftime(&self.time_str, self.time_str.len, if (pebble.clock_is_24h_style()) "%H:%M" else "%I:%M", tick_time);
         _ = pebble.strftime(&self.sec_str, self.sec_str.len, "%S", tick_time);
@@ -597,7 +597,7 @@ fn outbox_send(key: pebble_appids.MESSAGE_KEYS, value: anytype) void {
 fn tick_handler(tick_time: ?*pebble.tm, units_changed: pebble.TimeUnits) callconv(.c) void {
     if (!pebble.window_is_loaded(state.window)) return;
 
-    state.datetime_widget.update(tick_time.?, units_changed);
+    state.datetime_widget.update(tick_time.?);
 
     // Refresh sun event and heart rate graph every minute
     if (units_changed & pebble.MINUTE_UNIT != 0) {
@@ -667,6 +667,8 @@ fn init() void {
     });
     pebble.window_stack_push(state.window, true);
 
+    const ts = pebble.time(null);
+    state.datetime_widget.update(pebble.localtime(&ts));
     state.battery_widget.update(pebble.battery_state_service_peek());
     state.heartrate_widget.update(@intCast(pebble.health_service_peek_current_value(pebble.HealthMetricHeartRateBPM)));
     state.heartratehistory_widget.update();
