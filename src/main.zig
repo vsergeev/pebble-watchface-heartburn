@@ -683,7 +683,7 @@ fn init() void {
     _ = pebble.app_message_register_inbox_dropped(inbox_dropped_callback);
     _ = pebble.app_message_register_outbox_failed(outbox_failed_callback);
     _ = pebble.app_message_register_outbox_sent(outbox_sent_callback);
-    _ = pebble.app_message_open(64, 64);
+    _ = pebble.app_message_open(128, 128);
 }
 
 fn deinit() void {
