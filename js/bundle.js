@@ -163,13 +163,6 @@
       throw err;
     }
   }
-  Pebble.addEventListener("ready", async function(_) {
-    try {
-      await refreshWeather();
-    } catch (err) {
-      console.log("Error fetching weather:", err);
-    }
-  });
   Pebble.addEventListener("appmessage", async function(e) {
     if (e.payload["REQUEST_WEATHER"]) {
       try {
@@ -192,11 +185,6 @@
     } catch (err) {
       console.log("Error processing configuration:", err);
       return;
-    }
-    try {
-      await refreshWeather();
-    } catch (err) {
-      console.log("Error fetching weather:", err);
     }
   });
 })();
