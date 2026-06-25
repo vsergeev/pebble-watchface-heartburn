@@ -1,4 +1,4 @@
-// pebble-watchface-heartburn v1.1
+// pebble-watchface-heartburn v1.2
 // https://github.com/vsergeev/pebble-watchface-heartburn
 
 const std = @import("std");
