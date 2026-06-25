@@ -58,6 +58,7 @@
 `;
 
   // src/index.ts
+  var CACHE_EXPIRATION_MS = 15 * 60 * 1e3;
   async function geolocate() {
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15e3, maximumAge: 6e4 });
@@ -143,21 +144,37 @@
   }
   async function refreshWeather() {
     try {
+      if (localStorage.getItem("weatherCache")) {
+        const weatherCache = JSON.parse(localStorage.getItem("weatherCache"));
+        const [currentTime, cacheTime] = [/* @__PURE__ */ new Date(), new Date(weatherCache["timestamp"])];
+        if (currentTime > cacheTime && currentTime.valueOf() - cacheTime.valueOf() < CACHE_EXPIRATION_MS) {
+          console.log("Using cached weather from " + cacheTime);
+          await pebbleSendAppMessage(weatherCache.weatherAppMessage);
+          return;
+        }
+      }
+    } catch (err) {
+      console.log("Error looking up weather cache:", err);
+      return;
+    }
+    try {
       const location = await geolocate();
-      const temperatureUnit = localStorage.getItem("temperatureUnit") === "F" ? "fahrenheit" : "celsius";
+      console.log("Looking up weather at " + /* @__PURE__ */ new Date());
       const weather = JSON.parse(
         await fetch(
           "GET",
-          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&past_days=1&forecast_days=2&temperature_unit=" + temperatureUnit
+          "https://api.open-meteo.com/v1/forecast?latitude=" + location.coords.latitude + "&longitude=" + location.coords.longitude + "&daily=sunrise,sunset&current=temperature_2m,weather_code&past_days=1&forecast_days=2&temperature_unit=" + (localStorage.getItem("temperatureUnit") === "F" ? "fahrenheit" : "celsius")
         )
       );
       const currentTime = /* @__PURE__ */ new Date();
-      await pebbleSendAppMessage({
+      const weatherAppMessage = {
         WEATHER_CONDITIONS: mapWeatherCode(weather.current.weather_code),
         WEATHER_TEMPERATURE: Math.round(weather.current.temperature_2m),
         WEATHER_SUNRISE: weather.daily.sunrise[weather.daily.sunrise.map((d) => currentTime < /* @__PURE__ */ new Date(d + "Z")).indexOf(true)],
         WEATHER_SUNSET: weather.daily.sunset[weather.daily.sunset.map((d) => currentTime < /* @__PURE__ */ new Date(d + "Z")).indexOf(true)]
-      });
+      };
+      localStorage.setItem("weatherCache", JSON.stringify({ timestamp: currentTime, weatherAppMessage }));
+      await pebbleSendAppMessage(weatherAppMessage);
     } catch (err) {
       await pebbleSendAppMessage({ WEATHER_ERROR: 1 });
       throw err;
@@ -186,5 +203,6 @@
       console.log("Error processing configuration:", err);
       return;
     }
+    localStorage.removeItem("weatherCache");
   });
 })();
