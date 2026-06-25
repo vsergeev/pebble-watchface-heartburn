@@ -684,6 +684,8 @@ fn init() void {
     _ = pebble.app_message_register_outbox_failed(outbox_failed_callback);
     _ = pebble.app_message_register_outbox_sent(outbox_sent_callback);
     _ = pebble.app_message_open(128, 128);
+
+    outbox_send(pebble_appids.MESSAGE_KEYS.REQUEST_WEATHER, @as(u8, 1));
 }
 
 fn deinit() void {
