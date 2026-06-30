@@ -35,6 +35,7 @@ var state: struct {
     weather_widget: WeatherWidget = .{},
     sunevent_widget: SunEventWidget = .{},
     battery_widget: BatteryWidget = .{},
+    quiettime_widget: QuietTimeWidget = .{},
     heartrate_widget: HeartRateWidget = .{},
     heartratehistory_widget: HeartRateHistoryWidget = .{},
     datetime_widget: DateTimeWidget = .{},
@@ -347,6 +348,42 @@ const BatteryWidget = struct {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// QuietTime Widget
+////////////////////////////////////////////////////////////////////////////////
+
+const QuietTimeWidget = struct {
+    layer: ?*pebble.Layer = null,
+    quiet_time_enabled: bool = false,
+
+    pub fn load(self: *QuietTimeWidget, window: ?*pebble.Window) void {
+        self.layer = pebble.layer_create(pebble.layer_get_bounds(pebble.window_get_root_layer(window)));
+        pebble.layer_set_update_proc(self.layer, QuietTimeWidget.draw);
+        pebble.layer_add_child(pebble.window_get_root_layer(window), self.layer);
+    }
+
+    pub fn unload(self: *QuietTimeWidget, _: ?*pebble.Window) void {
+        pebble.layer_destroy(self.layer);
+    }
+
+    pub fn update(self: *QuietTimeWidget, quiet_time_enabled: bool) void {
+        if (quiet_time_enabled != self.quiet_time_enabled) {
+            self.quiet_time_enabled = quiet_time_enabled;
+            pebble.layer_mark_dirty(self.layer);
+        }
+    }
+
+    pub fn draw(layer: ?*pebble.Layer, ctx: ?*pebble.GContext) callconv(.c) void {
+        const self = &state.quiettime_widget;
+
+        if (self.quiet_time_enabled) {
+            const layer_bounds = pebble.layer_get_bounds(self.layer);
+            const icon_size = pebble.graphics_text_layout_get_content_size("z", FONT_ICONS, layer_bounds, pebble.GTextOverflowModeWordWrap, pebble.GTextAlignmentCenter);
+            widget_draw(ctx, pebble.layer_get_bounds(layer), .TopRight, .{ .x = 0, .y = icon_size.h + ICON_SPACING_PX }, "z", "");
+        }
+    }
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // HeartRate Widget
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -599,6 +636,8 @@ fn tick_handler(tick_time: ?*pebble.tm, units_changed: pebble.TimeUnits) callcon
 
     state.datetime_widget.update(tick_time.?);
 
+    state.quiettime_widget.update(pebble.quiet_time_is_active());
+
     // Refresh sun event and heart rate graph every minute
     if (units_changed & pebble.MINUTE_UNIT != 0) {
         state.sunevent_widget.update();
@@ -635,6 +674,7 @@ fn window_load(window: ?*pebble.Window) callconv(.c) void {
     state.weather_widget.load(window);
     state.sunevent_widget.load(window);
     state.battery_widget.load(window);
+    state.quiettime_widget.load(window);
     state.heartrate_widget.load(window);
     state.heartratehistory_widget.load(window);
     state.datetime_widget.load(window);
@@ -645,6 +685,7 @@ fn window_unload(window: ?*pebble.Window) callconv(.c) void {
     state.heartratehistory_widget.load(window);
     state.heartrate_widget.unload(window);
     state.battery_widget.unload(window);
+    state.quiettime_widget.unload(window);
     state.sunevent_widget.unload(window);
     state.weather_widget.unload(window);
 }
@@ -670,6 +711,7 @@ fn init() void {
     const ts = pebble.time(null);
     state.datetime_widget.update(pebble.localtime(&ts));
     state.battery_widget.update(pebble.battery_state_service_peek());
+    state.quiettime_widget.update(pebble.quiet_time_is_active());
     state.heartrate_widget.update(@intCast(pebble.health_service_peek_current_value(pebble.HealthMetricHeartRateBPM)));
     state.heartratehistory_widget.update();
 
