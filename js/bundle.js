@@ -138,6 +138,10 @@
         return "Snow";
       case 86:
         return "HeavySnow";
+      case 95:
+        return "Lightning";
+      case 96:
+        return "CloudyLightning";
       default:
         return "Unknown";
     }
