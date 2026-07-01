@@ -1,3 +1,7 @@
+* v1.3 - 07/01/2026
+    * Add icon mapping for thunderstorm weather conditions.
+    * Add quiet time widget.
+
 * v1.2 - 06/25/2026
     * Load time and date on initialization.
     * Add caching for weather data.
