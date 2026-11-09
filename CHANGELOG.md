@@ -1,3 +1,8 @@
+* v1.4 - 11/08/2026
+    * Add additional icon mappings for thunderstorm weather conditions.
+    * Increase geolocation timeout and maximum age.
+    * Migrate to Zig 0.17.
+
 * v1.3 - 07/01/2026
     * Add icon mapping for thunderstorm weather conditions.
     * Add quiet time widget.
