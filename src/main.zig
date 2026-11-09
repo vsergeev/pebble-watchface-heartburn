@@ -120,7 +120,7 @@ const WeatherConditions = enum(u8) {
 const WeatherWidget = struct {
     layer: ?*pebble.Layer = null,
     conditions: ?WeatherConditions = null,
-    temperature_str: [8:0]u8 = ("?°" ++ [_]u8{0} ** 5).*,
+    temperature_str: [8:0]u8 = ("?°" ++ @as([5]u8, @splat(0))).*,
 
     pub fn load(self: *WeatherWidget, window: ?*pebble.Window) void {
         self.layer = pebble.layer_create(pebble.layer_get_bounds(pebble.window_get_root_layer(window)));
@@ -134,7 +134,7 @@ const WeatherWidget = struct {
 
     pub fn reset(self: *WeatherWidget) void {
         self.conditions = null;
-        _ = std.fmt.bufPrintZ(&self.temperature_str, "?°", .{}) catch unreachable;
+        _ = std.mem.printSentinel(&self.temperature_str, "?°", .{}, 0) catch unreachable;
         pebble.layer_mark_dirty(self.layer);
     }
 
@@ -144,7 +144,7 @@ const WeatherWidget = struct {
     }
 
     pub fn updateTemperature(self: *WeatherWidget, temperature: i32) void {
-        _ = std.fmt.bufPrintZ(&self.temperature_str, "{d}°", .{temperature}) catch unreachable;
+        _ = std.mem.printSentinel(&self.temperature_str, "{d}°", .{temperature}, 0) catch unreachable;
         pebble.layer_mark_dirty(self.layer);
     }
 
@@ -206,7 +206,7 @@ const SunEventWidget = struct {
     sunset_ts: ?pebble.time_t = null,
     event: ?SunEvent = null,
     event_ts: ?pebble.time_t = null,
-    time_str: [8:0]u8 = ("-:--" ++ [_]u8{0} ** 4).*,
+    time_str: [8:0]u8 = ("-:--" ++ @as([4]u8, @splat(0))).*,
 
     pub fn load(self: *SunEventWidget, window: ?*pebble.Window) void {
         self.layer = pebble.layer_create(pebble.layer_get_bounds(pebble.window_get_root_layer(window)));
@@ -256,9 +256,9 @@ const SunEventWidget = struct {
             const tm_min = @as(usize, @intCast(event_tm.tm_min));
 
             if (pebble.clock_is_24h_style()) {
-                _ = std.fmt.bufPrintZ(&self.time_str, "{d}:{d:0>2}", .{ tm_hour, tm_min }) catch unreachable;
+                _ = std.mem.printSentinel(&self.time_str, "{d}:{d:0>2}", .{ tm_hour, tm_min }, 0) catch unreachable;
             } else {
-                _ = std.fmt.bufPrintZ(&self.time_str, "{d}:{d:0>2}", .{ if (tm_hour % 12 == 0) 12 else (tm_hour % 12), tm_min }) catch unreachable;
+                _ = std.mem.printSentinel(&self.time_str, "{d}:{d:0>2}", .{ if (tm_hour % 12 == 0) 12 else (tm_hour % 12), tm_min }, 0) catch unreachable;
             }
         } else {
             // Do nothing if event is unchanged
@@ -269,7 +269,7 @@ const SunEventWidget = struct {
             self.event = null;
             self.event_ts = null;
 
-            _ = std.fmt.bufPrintZ(&self.time_str, "-:--", .{}) catch unreachable;
+            _ = std.mem.printSentinel(&self.time_str, "-:--", .{}, 0) catch unreachable;
         }
 
         pebble.layer_mark_dirty(self.layer);
@@ -305,7 +305,7 @@ const SunEventWidget = struct {
 const BatteryWidget = struct {
     layer: ?*pebble.Layer = null,
     battery_level: u8 = 0,
-    battery_level_str: [8:0]u8 = ("?%" ++ [_]u8{0} ** 6).*,
+    battery_level_str: [8:0]u8 = ("?%" ++ @as([6]u8, @splat(0))).*,
     charging: bool = false,
 
     pub fn load(self: *BatteryWidget, window: ?*pebble.Window) void {
@@ -322,7 +322,7 @@ const BatteryWidget = struct {
         self.battery_level = charge.charge_percent;
         self.charging = charge.is_charging;
 
-        _ = std.fmt.bufPrintZ(&self.battery_level_str, "{d}%", .{self.battery_level}) catch unreachable;
+        _ = std.mem.printSentinel(&self.battery_level_str, "{d}%", .{self.battery_level}, 0) catch unreachable;
 
         pebble.layer_mark_dirty(self.layer);
     }
@@ -389,7 +389,7 @@ const QuietTimeWidget = struct {
 
 const HeartRateWidget = struct {
     layer: ?*pebble.Layer = null,
-    heartrate_bpm_str: [8:0]u8 = ("--" ++ [_]u8{0} ** 6).*,
+    heartrate_bpm_str: [8:0]u8 = ("--" ++ @as([6]u8, @splat(0))).*,
 
     pub fn load(self: *HeartRateWidget, window: ?*pebble.Window) void {
         self.layer = pebble.layer_create(pebble.layer_get_bounds(pebble.window_get_root_layer(window)));
@@ -403,9 +403,9 @@ const HeartRateWidget = struct {
 
     pub fn update(self: *HeartRateWidget, heartrate_bpm: u32) void {
         if (heartrate_bpm == 0) {
-            self.heartrate_bpm_str = ("--" ++ [_]u8{0} ** 6).*;
+            self.heartrate_bpm_str = ("--" ++ @as([6]u8, @splat(0))).*;
         } else {
-            _ = std.fmt.bufPrintZ(&self.heartrate_bpm_str, "{d}", .{heartrate_bpm}) catch unreachable;
+            _ = std.mem.printSentinel(&self.heartrate_bpm_str, "{d}", .{heartrate_bpm}, 0) catch unreachable;
         }
 
         pebble.layer_mark_dirty(self.layer);
@@ -432,7 +432,7 @@ const HEART_RATE_HISTORY_COUNT: usize = @divTrunc(pebble.PBL_DISPLAY_WIDTH - 2 *
 
 const HeartRateHistoryWidget = struct {
     layer: ?*pebble.Layer = null,
-    heartrate_bpm_history: [HEART_RATE_HISTORY_COUNT]u16 = [_]u16{0} ** HEART_RATE_HISTORY_COUNT,
+    heartrate_bpm_history: [HEART_RATE_HISTORY_COUNT]u16 = @splat(0),
     heartrate_bpm_max: u16 = 0,
     heartrate_bpm_min: u16 = 0,
 
@@ -498,9 +498,9 @@ const HeartRateHistoryWidget = struct {
 
 const DateTimeWidget = struct {
     layer: ?*pebble.Layer = null,
-    date_str: [16]u8 = ("---" ++ [_]u8{0} ** 13).*,
-    time_str: [8]u8 = ("--:--" ++ [_]u8{0} ** 3).*,
-    sec_str: [4]u8 = ("--" ++ [_]u8{0} ** 2).*,
+    date_str: [16]u8 = ("---" ++ @as([13]u8, @splat(0))).*,
+    time_str: [8]u8 = ("--:--" ++ @as([3]u8, @splat(0))).*,
+    sec_str: [4]u8 = ("--" ++ @as([2]u8, @splat(0))).*,
     am_pm: ?enum { AM, PM } = null,
     show_seconds: ?usize = null,
 
@@ -568,35 +568,35 @@ const DateTimeWidget = struct {
 ////////////////////////////////////////////////////////////////////////////////
 
 fn inbox_received_callback(iterator: [*c]pebble.DictionaryIterator, _: ?*anyopaque) callconv(.c) void {
-    const weather_temperature_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_TEMPERATURE));
+    const weather_temperature_tuple = pebble.dict_find(iterator, @backingInt(pebble_appids.MESSAGE_KEYS.WEATHER_TEMPERATURE));
     if (weather_temperature_tuple != null) {
         state.weather_widget.updateTemperature(weather_temperature_tuple.*.value().*.int32);
     }
 
-    const weather_conditions_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_CONDITIONS));
+    const weather_conditions_tuple = pebble.dict_find(iterator, @backingInt(pebble_appids.MESSAGE_KEYS.WEATHER_CONDITIONS));
     if (weather_conditions_tuple != null) {
         const conditions = std.mem.span(weather_conditions_tuple.*.value().*.cstring());
-        inline for (@typeInfo(WeatherConditions).@"enum".fields) |enumField| {
-            if (std.mem.eql(u8, conditions, enumField.name)) {
-                state.weather_widget.updateConditions(@field(WeatherConditions, enumField.name));
+        inline for (@typeInfo(WeatherConditions).@"enum".field_names) |field_name| {
+            if (std.mem.eql(u8, conditions, field_name)) {
+                state.weather_widget.updateConditions(@field(WeatherConditions, field_name));
                 break;
             }
         } else state.weather_widget.updateConditions(.Unknown);
     }
 
-    const weather_sunrise_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_SUNRISE));
+    const weather_sunrise_tuple = pebble.dict_find(iterator, @backingInt(pebble_appids.MESSAGE_KEYS.WEATHER_SUNRISE));
     if (weather_sunrise_tuple != null) {
         const sunrise_iso8601_str = std.mem.span(weather_sunrise_tuple.*.value().*.cstring());
         state.sunevent_widget.updateSunrise(sunrise_iso8601_str);
     }
 
-    const weather_sunset_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_SUNSET));
+    const weather_sunset_tuple = pebble.dict_find(iterator, @backingInt(pebble_appids.MESSAGE_KEYS.WEATHER_SUNSET));
     if (weather_sunset_tuple != null) {
         const sunset_iso8601_str = std.mem.span(weather_sunset_tuple.*.value().*.cstring());
         state.sunevent_widget.updateSunset(sunset_iso8601_str);
     }
 
-    const weather_error_tuple = pebble.dict_find(iterator, @intFromEnum(pebble_appids.MESSAGE_KEYS.WEATHER_ERROR));
+    const weather_error_tuple = pebble.dict_find(iterator, @backingInt(pebble_appids.MESSAGE_KEYS.WEATHER_ERROR));
     if (weather_error_tuple != null) {
         state.weather_widget.reset();
         state.sunevent_widget.reset();
@@ -619,7 +619,7 @@ fn outbox_send(key: pebble_appids.MESSAGE_KEYS, value: anytype) void {
     if (pebble.app_message_outbox_begin(&iter) != pebble.APP_MSG_OK) return;
 
     if (@TypeOf(value) == u8) {
-        _ = pebble.dict_write_uint8(iter, @intFromEnum(key), value);
+        _ = pebble.dict_write_uint8(iter, @backingInt(key), value);
     } else {
         @compileError("Unsupported value type");
     }
@@ -695,7 +695,7 @@ fn window_unload(window: ?*pebble.Window) callconv(.c) void {
 ////////////////////////////////////////////////////////////////////////////////
 
 fn init() void {
-    FONT_ICONS = pebble.fonts_load_custom_font(pebble.resource_get_handle(@intFromEnum(pebble_appids.RESOURCE_IDS.FONT_ICONS_18)));
+    FONT_ICONS = pebble.fonts_load_custom_font(pebble.resource_get_handle(@backingInt(pebble_appids.RESOURCE_IDS.FONT_ICONS_18)));
     FONT_WIDGETS = pebble.fonts_get_system_font(pebble.FONT_KEY_GOTHIC_18_BOLD);
     FONT_DATETIME_BIG = pebble.fonts_get_system_font(pebble.FONT_KEY_BITHAM_42_MEDIUM_NUMBERS);
     FONT_DATETIME_SMALL = pebble.fonts_get_system_font(pebble.FONT_KEY_GOTHIC_24_BOLD);

@@ -7,7 +7,7 @@
             .hash = "pebble_sdk-1.5.0-rN96oOGyAADTDDbAozgmYIiFNeG07DO1ijTewqS_FcB4",
         },
     },
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .paths = .{""},
     .fingerprint = 0x5d8ad21e7301b63f,
 }
