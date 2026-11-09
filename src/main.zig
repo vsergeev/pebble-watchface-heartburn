@@ -682,7 +682,7 @@ fn window_load(window: ?*pebble.Window) callconv(.c) void {
 
 fn window_unload(window: ?*pebble.Window) callconv(.c) void {
     state.datetime_widget.unload(window);
-    state.heartratehistory_widget.load(window);
+    state.heartratehistory_widget.unload(window);
     state.heartrate_widget.unload(window);
     state.battery_widget.unload(window);
     state.quiettime_widget.unload(window);
