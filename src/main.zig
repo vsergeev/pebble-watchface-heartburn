@@ -604,11 +604,11 @@ fn inbox_received_callback(iterator: [*c]pebble.DictionaryIterator, _: ?*anyopaq
 }
 
 fn inbox_dropped_callback(reason: pebble.AppMessageResult, _: ?*anyopaque) callconv(.c) void {
-    pebble.app_log(pebble.APP_LOG_LEVEL_INFO, "main.zig", 0, "message inbox failed: %d", reason);
+    pebble.app_log(pebble.APP_LOG_LEVEL_ERROR, "main.zig", 0, "message inbox failed: %d", reason);
 }
 
 fn outbox_failed_callback(_: [*c]pebble.DictionaryIterator, reason: pebble.AppMessageResult, _: ?*anyopaque) callconv(.c) void {
-    pebble.app_log(pebble.APP_LOG_LEVEL_INFO, "main.zig", 0, "message outbox failed: %d", reason);
+    pebble.app_log(pebble.APP_LOG_LEVEL_ERROR, "main.zig", 0, "message outbox failed: %d", reason);
 }
 
 fn outbox_sent_callback(_: [*c]pebble.DictionaryIterator, _: ?*anyopaque) callconv(.c) void {}
@@ -621,7 +621,7 @@ fn outbox_send(key: pebble_appids.MESSAGE_KEYS, value: anytype) void {
     if (@TypeOf(value) == u8) {
         _ = pebble.dict_write_uint8(iter, @intFromEnum(key), value);
     } else {
-        @compileLog("Unsupported value type");
+        @compileError("Unsupported value type");
     }
 
     _ = pebble.app_message_outbox_send();
