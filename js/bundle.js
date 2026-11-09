@@ -61,7 +61,7 @@
   var CACHE_EXPIRATION_MS = 15 * 60 * 1e3;
   async function geolocate() {
     return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15e3, maximumAge: 6e4 });
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 30 * 1e3, maximumAge: 600 * 1e3 });
     });
   }
   async function fetch(method, url) {

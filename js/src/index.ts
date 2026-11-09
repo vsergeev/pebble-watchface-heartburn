@@ -15,7 +15,7 @@ const CACHE_EXPIRATION_MS = 15 * 60 * 1000;
 
 async function geolocate(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 15000, maximumAge: 60000 });
+    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 30 * 1000, maximumAge: 600 * 1000 });
   });
 }
 
