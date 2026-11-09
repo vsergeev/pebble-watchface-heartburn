@@ -139,9 +139,13 @@
       case 86:
         return "HeavySnow";
       case 95:
-        return "Lightning";
+      // Thunderstorm
       case 96:
-        return "CloudyLightning";
+      // Thunderstorm with slight hail
+      case 97:
+      // Heavy thunderstorm
+      case 99:
+        return "Lightning";
       default:
         return "Unknown";
     }

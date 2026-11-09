@@ -91,10 +91,11 @@ function mapWeatherCode(code: number): string {
       return 'Snow';
     case 86: // Snow Showers: Heavy
       return 'HeavySnow';
-    case 95: // Thunderstorm: Slight
+    case 95: // Thunderstorm
+    case 96: // Thunderstorm with slight hail
+    case 97: // Heavy thunderstorm
+    case 99: // Thunderstorm with heavy hail
       return 'Lightning';
-    case 96: // Thunderstorm: Moderate
-      return 'CloudyLightning';
     default:
       return 'Unknown';
   }
